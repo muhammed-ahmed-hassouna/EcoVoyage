@@ -75,7 +75,7 @@ const protected = (isLoggedIn, async (req, res) => {
         console.error("Error in protected route:", error);
         res.status(500).json({
             message: "Internal server error",
-            error: error.message  
+            error: error.message
         });
     }
 });

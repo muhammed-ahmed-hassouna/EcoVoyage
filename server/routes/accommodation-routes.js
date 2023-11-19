@@ -2,9 +2,9 @@ const { Router } = require('express');
 const accommodationController = require('../controllers/accommodation-controller');
 const router = Router();
 
-const verifyJWT = require('../Middleware/VerifyJWT');
-
-router.get('/getAccommodations',verifyJWT.authorize([1]), accommodationController.getAccommodations);
+// const verifyJWT = require('../Middleware/VerifyJWT');
+// verifyJWT.authorize([1]),
+router.get('/getAccommodations', accommodationController.getAccommodations);
 
 router.post('/addAccommodation', accommodationController.addAccommodation);
 

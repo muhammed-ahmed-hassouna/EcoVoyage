@@ -6,11 +6,9 @@ app.use(express.json());
 var cors = require('cors');
 app.use(cors());
 
-
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 const userRouter = require("./routes/user_routes");
 
@@ -29,8 +27,6 @@ const packagesRoutes = require('./routes/packages-routes');
 
 const contactUsRouter = require('./routes/contactUs_routes');
 
-const commentRouter = require('./routes/comment-routes');
-
 app.use(userRouter);
 
 app.use(OAuthRouter);
@@ -46,9 +42,5 @@ app.use(activitiesRoutes);
 app.use(contactUsRouter);
 
 app.use(packagesRoutes);
-
-app.use(commentRouter);
-
-
 
 app.listen(3999, () => { console.log(`Server started on port http://localhost:3999`) });

@@ -12,7 +12,6 @@ router.put('/deletePackages', packagesController.deletePackages);
 
 router.get('/getPackagesById/:id', packagesController.getPackagesById);
 
-
 router.post('/addCommentPC', packagesController.addComment);
 
 router.get('/getAccommodationsByID2PC/:id', packagesController.getAccommodationsByID2);

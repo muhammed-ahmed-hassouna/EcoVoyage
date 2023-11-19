@@ -4,6 +4,8 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const nodemailer = require('nodemailer');
+const userQueries = require('../Models/userQueries');
+
 
 const registerUser = async (req, res) => {
     // TLD " Top-Level-Domain Like org,gov,edu,maul"
@@ -132,7 +134,6 @@ var transporter = nodemailer.createTransport({
     }
 });
 
-
 // let emailSent = false;
 const generateVerificationCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -170,7 +171,7 @@ const sendEmail = async (req, res) => {
 
         const emailCheck = await db.query(checkEmailQuery, [email]);
         if (emailCheck.rows.length > 0) {
-            await sendVerificationEmail(email, generatedVerificationCode);
+            await sendVerificationEmail(email, generatedVerificationCode);  
             res.status(200).json({ message: "Verification code email has been sent." });
         } else {
             res.status(400).json({ error: "Email not found in the database." });
@@ -203,7 +204,6 @@ const updatepassword = async (req, res) => {
     const email = emailFromSendEmail;
 
     const updateQuery = 'UPDATE users SET password = $1 WHERE email = $2';
-
     try {
         const schema = Joi.object({
             newPassword: Joi.string()
@@ -242,14 +242,15 @@ const getUserData = async (req, res) => {
     }
 };
 
+
 const getUserId = async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await db.query('SELECT * FROM users WHERE is_deleted = false AND user_id = $1', [id]);
+        const result = await db.query(userQueries.getUserByIdQuery, [id]);
         if (!result.rowCount) {
             return res.status(404).json({ error: "The User not found" });
         } else {
-            res.status(200).json(result.rows,);
+            res.status(200).json(result.rows);
         }
     } catch (err) {
         res.status(500).send('Internal Server Error');
@@ -261,10 +262,6 @@ const updateUserData = async (req, res) => {
     const { first_name, last_name, email, password, confirm_password, country } = req.body;
 
     try {
-        const updateFields = [];
-        const values = [];
-        let placeholderCount = 1;
-
         const schema = Joi.object({
             first_name: Joi.string().min(3).max(25),
             last_name: Joi.string().min(3).max(25),
@@ -274,94 +271,61 @@ const updateUserData = async (req, res) => {
             confirm_password: Joi.string().optional().valid(Joi.ref('password')).when('password', {
                 is: Joi.exist(),
                 then: Joi.required(),
-            }),
+            })
         });
 
         const validate = schema.validate({ first_name, last_name, email, password, confirm_password, country });
 
         if (validate.error) {
-            res.status(400).json({ error: validate.error.details })
-        } else {
+            return res.status(400).json({ error: validate.error.details });
+        }
 
-            if (first_name) {
-                updateFields.push(`first_name = $${placeholderCount}`);
-                values.push(first_name);
-                placeholderCount++;
-            }
+        let hashedPassword;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
 
-            if (last_name) {
-                updateFields.push(`last_name = $${placeholderCount}`);
-                values.push(last_name);
-                placeholderCount++;
-            }
+            const values = [id, first_name, last_name, email, hashedPassword, country];
 
-            if (email) {
-                updateFields.push(`email = $${placeholderCount}`);
-                values.push(email);
-                placeholderCount++;
-            }
-
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                updateFields.push(`password =  $${placeholderCount}`);
-                values.push(hashedPassword);
-                placeholderCount++;
-            }
-
-            if (country) {
-                updateFields.push(`country = $${placeholderCount}`);
-                values.push(country);
-                placeholderCount++;
-            }
-
-            const query = `
-            UPDATE users
-            SET ${updateFields.join(', ')}
-            WHERE user_id = $${placeholderCount}
-            `;
-
-            values.push(id);
-
-            const result = await db.query(query, values);
+            const result = await db.query(userQueries.updateUserQuery, values);
 
             if (!result.rowCount) {
                 return res.status(404).json({ error: "The User not found" });
             } else {
                 res.status(200).json({
-                    message: 'The User Updated !',
+                    message: 'The User Updated!',
                     validate,
                 });
             }
+        }} catch (err) {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
         }
-    } catch (err) {
-        res.status(500).send('Internal Server Error');
     }
-}
 
-const deleteUser = async (req, res) => {
-    const user_id = req.query.user_id
-    try {
-        const result = await db.query('UPDATE users SET is_deleted = true WHERE user_id = $1', [user_id]);
-        if (!result.rowCount) {
-            return res.status(404).json({ error: "The User not found" });
-        } else {
-            res.status(200).json({
-                message: 'The User Deleted !',
-            });
+    const deleteUser = async (req, res) => {
+        const user_id = req.query.user_id
+        try {
+            const result = await db.query(userQueries.deleteUserQuery, [user_id]);
+            if (!result.rowCount) {
+                return res.status(404).json({ error: "The User not found" });
+            } else {
+                res.status(200).json({
+                    message: 'The User Deleted !',
+                });
+            }
+        } catch (err) {
+            res.status(500).send('Internal Server Error');
         }
-    } catch (err) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    };
 
-module.exports = {
-    registerUser,
-    loginUser,
-    updatepassword,
-    getUserData,
-    deleteUser,
-    sendEmail,
-    verificationCode,
-    getUserId,
-    updateUserData
-};
+    module.exports = {
+        registerUser,
+        loginUser,
+        updatepassword,
+        getUserData,
+        deleteUser,
+        sendEmail,
+        verificationCode,
+        getUserId,
+        updateUserData
+    };

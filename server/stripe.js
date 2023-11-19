@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/charge', (req, res) => {
-    const amount = 2500; // $25.00 in cents
+    const amount = 2700; // $25.00 in cents
 
     stripe.customers.create({
         email: req.body.stripeEmail,
@@ -29,7 +29,7 @@ app.post('/charge', (req, res) => {
         .then(customer => stripe.charges.create({
             amount,
             description: 'Sample Charge',
-            currency: 'usd',
+            currency: 'aed',
             customer: customer.id,
         }))
         .then(charge => res.render('success'));
