@@ -67,7 +67,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const schema = Joi.object({
             email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
@@ -134,6 +133,7 @@ var transporter = nodemailer.createTransport({
     }
 });
 
+
 // let emailSent = false;
 const generateVerificationCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -171,7 +171,7 @@ const sendEmail = async (req, res) => {
 
         const emailCheck = await db.query(checkEmailQuery, [email]);
         if (emailCheck.rows.length > 0) {
-            await sendVerificationEmail(email, generatedVerificationCode);  
+            await sendVerificationEmail(email, generatedVerificationCode);
             res.status(200).json({ message: "Verification code email has been sent." });
         } else {
             res.status(400).json({ error: "Email not found in the database." });
@@ -204,6 +204,7 @@ const updatepassword = async (req, res) => {
     const email = emailFromSendEmail;
 
     const updateQuery = 'UPDATE users SET password = $1 WHERE email = $2';
+
     try {
         const schema = Joi.object({
             newPassword: Joi.string()

@@ -19,7 +19,7 @@ const getPackages = async (req, res) => {
 const getPackagesById = async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await db.query(packageQueries.getPackagesByIdQuery,[id]);
+        const result = await db.query(packageQueries.getPackagesByIdQuery, [id]);
         res.json(result.rows)
     } catch (err) {
         console.error(err);
@@ -44,7 +44,7 @@ const updatePackages = async (req, res) => {
     const { id } = req.params;
 
     const { cost, title, overview, highlights, inclusions, exclusions, destination, itinerary } = req.body;
-    
+
     try {
         const values = [id, cost, title, overview, highlights, inclusions, exclusions, destination, itinerary];
         const result = await db.query(packageQueries.updatePackagesQuery, values);
@@ -80,11 +80,11 @@ const deletePackages = async (req, res) => {
     }
 }
 
-const addComment = async (req, res) => {
-    const { packages_id, user_id, comment_text } = req.body;
-
+const addCommentPac = async (req, res) => {
+    const { packages_id, comment_text } = req.body;
+    const user_id = req.user.user_id;
     try {
-        const packagesResult = await db.query(packageQueries.addCommentQuery, [packages_id]);
+        const packagesResult = await db.query(packageQueries.addCommentQuery, [packages_id, user_id, comment_text]);
 
         if (packagesResult.rowCount === 0) {
             return res.status(404).json({ error: 'packages not found or deleted' });
@@ -113,22 +113,67 @@ const addComment = async (req, res) => {
     }
 };
 
-const getAccommodationsByID2 = async (req, res) => {
-    const { id } = req.params;
+const getPackagesWithComments = async (req, res) => {
+    const packages_id = req.params.id;
     try {
-        const result = await db.query(packageQueries.getPackageWithCommentsQuery, [id]);
+        const result = await db.query(packageQueries.getPackageWithCommentsQuery, [packages_id]);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal Server Error');
     }
 };
+
+// Add validate
+const BookPackage = async (req, res) => {
+    const packages_id = req.params.id;
+    const { address, phone, room_preference, adults, children } = req.body;
+    const user_id = req.user.user_id;
+
+    try {
+        const result = await db.query(packageQueries.BookPackageQuery, [packages_id, user_id, address, phone, room_preference, adults, children]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+// Get All books by Package ID
+
+const getBookPackages = async (req, res) => {
+    const packages_id  = req.params.id;
+    try {
+        const result = await db.query(packageQueries.getBookPackagesQuery, [packages_id]);
+        if (!result.rowCount) {
+            return res.status(404).json({ error: "No Books In this Package !" });
+        } else {
+            res.json(result.rows);
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+
 module.exports = {
+
     getPackages,
+
     addPackages,
+
     updatePackages,
+
     deletePackages,
+
     getPackagesById,
-    getAccommodationsByID2,
-    addComment
+
+    getPackagesWithComments,
+
+    addCommentPac,
+
+    BookPackage,
+
+    getBookPackages
 }

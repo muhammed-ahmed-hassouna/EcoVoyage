@@ -53,7 +53,7 @@ const addCommentQuery = `
 
 const getPackageWithCommentsQuery = `
     SELECT
-        packages.*,
+        packages.packages_id,
         comments.comment_id,
         comments.comment_text,
         comments.timestamp as comment_timestamp,
@@ -67,12 +67,50 @@ const getPackageWithCommentsQuery = `
     AND
         packages.packages_id = $1`;
 
+
+
+const BookPackageQuery = `
+INSERT INTO booking(packages_id,user_id,address,phone,room_preference,adults,children)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *`;
+
+
+const getBookPackagesQuery = `
+SELECT
+    packages.packages_id,
+    booking.book_id,
+    booking.phone,
+    booking.room_preference,
+    booking.adults,
+    booking.children,
+    users.user_id,
+    users.first_name,
+    users.last_name
+FROM packages
+    INNER JOIN booking ON packages.packages_id = booking.packages_id
+    INNER JOIN users ON booking.user_id = users.user_id
+    WHERE
+        packages.is_deleted = false
+    AND
+        packages.packages_id = $1`;
+
 module.exports = {
     getPackagesQuery,
+
     getPackagesByIdQuery,
+
     addPackagesQuery,
+
     updatePackagesQuery,
+
     deletePackagesQuery,
+
     addCommentQuery,
-    getPackageWithCommentsQuery
+
+    getPackageWithCommentsQuery,
+
+    BookPackageQuery,
+
+    getBookPackagesQuery,
+
 };

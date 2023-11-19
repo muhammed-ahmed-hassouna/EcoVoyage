@@ -36,6 +36,7 @@ const updateAccommodationQuery = `
         accommodation_id = $1 
     RETURNING *`;
 
+
 const deleteAccommodationQuery = `
     UPDATE accommodation
     SET 
@@ -43,17 +44,20 @@ const deleteAccommodationQuery = `
     WHERE 
         accommodation_id = $1`;
 
+
 const addCommentQuery = `
     INSERT INTO comments(accommodation_id, user_id, comment_text)
     VALUES ($1, $2, $3)
     RETURNING *`;
 
+
 const getAccommodationsWithCommentsQuery = `
     SELECT
-        accommodation.*,
+        accommodation.accommodation_id,
         comments.comment_id,
         comments.comment_text,
         comments.timestamp as comment_timestamp,
+        users.user_id,
         users.first_name,
         users.last_name
     FROM accommodation
@@ -64,12 +68,69 @@ const getAccommodationsWithCommentsQuery = `
     AND
         accommodation.accommodation_id = $1`;
 
+
+const BookAccommodationQuery = `
+INSERT INTO booking(accommodation_id,user_id,address,phone,room_preference,adults,children)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *`;
+
+
+const getBookAccommodationQuery = `
+SELECT
+    accommodation.accommodation_id,
+    booking.book_id,
+    booking.phone,
+    booking.room_preference,
+    booking.adults,
+    booking.children,
+    users.user_id,
+    users.first_name,
+    users.last_name
+FROM accommodation
+    INNER JOIN booking ON accommodation.accommodation_id = booking.accommodation_id
+    INNER JOIN users ON booking.user_id = users.user_id
+    WHERE
+        accommodation.is_deleted = false
+    AND
+        accommodation.accommodation_id = $1`;
+
+
+const getBookByIdQuery = `
+    SELECT *
+    FROM booking
+    WHERE book_id = $1
+    
+`;
+
+const getAccommodationsQueryPaginated = `
+    SELECT * FROM accommodation
+    ORDER BY title ASC
+    LIMIT $1
+    OFFSET $2;
+`
+
 module.exports = {
+
     getAccommodationsQuery,
+
     getAccommodationsByIDQuery,
+
     addAccommodationQuery,
+
     updateAccommodationQuery,
+
     deleteAccommodationQuery,
+
     addCommentQuery,
-    getAccommodationsWithCommentsQuery
+
+    getAccommodationsWithCommentsQuery,
+
+    BookAccommodationQuery,
+
+    getBookAccommodationQuery,
+
+    getBookByIdQuery,
+
+    getAccommodationsQueryPaginated
+
 };
