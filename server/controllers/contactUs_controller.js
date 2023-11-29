@@ -1,66 +1,138 @@
-// Original file
-
+const express = require("express");
+const app = express();
+app.use(express.json());
+const nodemailer = require('nodemailer');
+var cors = require('cors');
+app.use(cors());
 const db = require("../Models/config/db");
-const contactQueries = require('../Models/contactQueries');
 
-const getContact = async (req, res) => {
-  try {
-    const result = await db.query(contactQueries.getContactQuery);
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const addContact = async (req, res) => {
-  const { username, email, subject, message } = req.body;
-  const time = new Date();
-  try {
-    const values = [username, email, subject, message, time];
-    await db.query(contactQueries.addContactQuery, values);
-    res.status(201).json({ message: `Your Message has been sent` });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'mohammedhassouna000@gmail.com',
+        pass: 'iyfyzqcsphpdwgvz',
+    },
+    auth: {
+        user: 'psmohammad780@gmail.com',
+        pass: 'lpvkrxpgamkzlwzl',
+    },
+});
 
-// const contactId = async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const result = await db.query(contactQueries.getContactByIdQuery, [id]);
-//     if (!result.rowCount) {
-//       return res.status(404).json({ error: "Message not found" });
-//     } else {
-//       res.json(result.rows);
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
-const deleteContact = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await db.query(contactQueries.deleteContactQuery, [id]);
-    if (!result.rowCount) {
-      return res.status(404).json({ error: "Message not found" });
-    } else {
-      res.status(200).json({
-        message: "Deleted Successfully",
-      });
+const sendMessageEmail = async (fullname, email, message, subject) => {
+    const mailOptions = {
+        from: email,
+        to: 'mohammedhassouna000@gmail.com',
+        // to: email,
+        subject: subject,
+        html: `<p><strong>fullname:</strong> ${fullname}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong> ${message}</p>`,
+    };
+    // console.log(email);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw new Error('Failed to send email');
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
+
+
+
+const saveContactToDatabase = async (fullname, email, message, subject) => {
+    try {
+        const result = await db.query(
+            'INSERT INTO contact_us (fullname, email, message, subject) VALUES ($1, $2, $3, $4)',
+            [fullname, email, message, subject]
+        );
+        console.log('Contact saved to database:', result.rows);
+    } catch (error) {
+        console.error('Error saving contact to database:', error);
+    }
+};
+
+const sendEmailContact = async (req, res) => {
+    try {
+        const fullname = req.body.fullname;
+        const email = req.body.email;
+        const message = req.body.message;
+        const subject = req.body.subject;
+
+        await sendMessageEmail(fullname, email, message, subject);
+        await saveContactToDatabase(fullname, email, message, subject);
+
+        res.status(200).json({ message: 'Email has been sent and contact details saved.' });
+    } catch (error) {
+        console.error('Error sending email or saving contact:', error);
+        res.status(500).json({ error: 'An error occurred while sending the email or saving contact details.' });
+    }
+};
+
+const getContact =  async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM contact_us WHERE is_shown = true');
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Contact not found or already deleted.' });
+        }
+        const contactDetails = result.rows;
+        res.status(200).json(contactDetails);
+    } catch (error) {
+        console.error('Error fetching contact details:', error);
+        res.status(500).json({ error: 'An error occurred while fetching contact details.' });
+    }
+};
+
+const getContactById =  async (req, res) => {
+    try {
+        const contactId = req.params.id;
+
+        const result = await db.query('SELECT * FROM contact_us WHERE contact_id = $1 AND is_shown = true', [contactId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Contact not found or already deleted.' });
+        }
+        const contactDetails = result.rows;
+        res.status(200).json(contactDetails);
+    } catch (error) {
+        console.error('Error fetching contact details:', error);
+        res.status(500).json({ error: 'An error occurred while fetching contact details.' });
+    }
+};
+
+const updateContactShownStatus = async (req, res) => {
+    try {
+        const contactId = req.params.id;
+
+        const selectResult = await db.query('SELECT * FROM contact_us WHERE contact_id = $1', [contactId]);
+
+        if (selectResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Contact not found.' });
+        }
+
+        const currentStatus = selectResult.rows[0].is_shown;
+        const newStatus = !currentStatus;
+
+        const updateResult = await db.query('UPDATE contact_us SET is_shown = $1 WHERE contact_id = $2', [newStatus, contactId]);
+
+        if (updateResult.rowCount === 0) {
+            return res.status(404).json({ error: 'Contact not found or already deleted.' });
+        }
+
+        res.status(200).json({ message: 'Contact status toggled successfully.', newStatus });
+    } catch (error) {
+        console.error('Error toggling contact status:', error);
+        res.status(500).json({ error: 'An error occurred while toggling contact status.' });
+    }
+};
+
 
 module.exports = {
-  getContact,
-  addContact,
-  // contactId,
-  deleteContact
-};
+    sendEmailContact,
+
+    getContact,
+    
+    getContactById,
+
+    updateContactShownStatus
+}

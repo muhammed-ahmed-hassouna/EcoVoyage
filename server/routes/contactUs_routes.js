@@ -2,12 +2,16 @@ const { Router } = require("express");
 const contactUsController = require("../controllers/contactUs_controller");
 const router = Router();
 
+const verifyJWT = require('../Middleware/VerifyJWT');
+
+router.post("/sendEmailContact",verifyJWT.authorize([1 , 2]), contactUsController.sendEmailContact);
+
 router.get("/getContact", contactUsController.getContact);
 
-router.post("/addContact", contactUsController.addContact);
+router.get("/getContactById/:id", contactUsController.getContactById);
 
-// router.get("/contactid/:id", contactUsController.contactid);
+router.put('/updateContactShownStatus/:id', contactUsController.updateContactShownStatus);
 
-router.put("/deleteContact/:id", contactUsController.deleteContact);
+
 
 module.exports = router;

@@ -1,2 +1,5 @@
 node_modules
 db.js
+.env
+knexConfig.js
+package-lock.json
