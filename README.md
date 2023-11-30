@@ -1,32 +1,34 @@
 # EcoVoyage
 
-## Eco-Friendly travelling website
-This repository contains the source code for a website dedicated to travels. It is designed and developed by our team to provide an interactive platform for trips booking that encourage travellers to participate in an eco-friendly trips.
+Welcome to EcoVoyage! This article serves as a comprehensive guide to our initiative, shedding light on the project's purpose, the passionate team behind it, the technologies employed, and crucial links for seamless collaboration.
 
-## Our Team
-* Rawand Al-Hawwari.
-* Muhammed Hassonah.
+## EcoVoyage Overview
 
-## Figma Link
-You can view the design and mockups for the project on Figma by following this Figma [Link](https://www.figma.com/file/16GvmSEuLL9PqAqI5OwtCJ/Untitled?type=design&node-id=0%3A1&mode=design&t=fHyWQT9H0UYIjg9r-1).
+EcoVoyage is a website designed to promote eco-friendly travel by connecting environmentally conscious travelers with sustainable accommodations, and activities. Our goal is to make responsible travel choices more accessible and appealing, contributing to a greener and more sustainable tourism industry.
 
-## Repository Link
-Repository [Link](https://github.com/masterpiece-EcoVoyage/EcoVoyage).
+## Technologies Utilized
 
-## Team Members Repository Links
-* Rawand Al-Hawwari [Link]()
-* Muhammed Hassonah [Link]()
+Explore the cutting-edge technologies and tools that power the EcoVoyage:
 
-## Trello Link
-We manage our project tasks and workflow using Trello. You can check our progress and upcoming tasks on our Trello Board.
-[Link](https://trello.com/b/74XLMNPt/masterpiece)
+* Node.js: The JavaScript runtime for building server-side applications.
+* Express: A web application framework for crafting APIs and web applications in Node.js.
+* Firebase: Google's comprehensive platform for developing web and mobile applications, offering cloud-based services for seamless backend development.
+* Trello: Our trusted project management tool for organizing tasks and streamlining workflows.
 
-## Technologies and Skills
-This project is built using the following technologies and skills:
+## Official Links
+Here are the official links and resources for the project:
 
-* React
-* Tailwind
-* Postgres
+Organization Repository [Link](https://github.com/masterpiece-EcoVoyage/EcoVoyage)
 
+Brief [Link](https://docs.google.com/document/d/1oi--V90M4879a1Xe4RFqXw3EO_2BkTY1CDJ5GfJtSpc/edit?usp=sharing)
 
-Feel free to explore the code.
+Documentation [Link](https://docs.google.com/document/d/1C2NNvziF7F4B1MDDop4qy8ZSNBBRLiaSveVSA0fWaTY/edit?usp=sharing)
+
+Presentation [Link](https://gamma.app/public/EcoVoyage-hiz5qjb4w9e621m?mode=doc)
+
+### Other Links
+[Figma](https://www.figma.com/file/16GvmSEuLL9PqAqI5OwtCJ/Untitled?type=design&node-id=0%3A1&mode=design&t=fHyWQT9H0UYIjg9r-1).
+
+[Trello](https://trello.com/b/74XLMNPt/masterpiece)
+
+Thank you and feel free to explore the code.
